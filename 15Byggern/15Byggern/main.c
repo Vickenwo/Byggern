@@ -19,6 +19,7 @@
 #include <avr/interrupt.h>
 #include "adc.h"
 #include "joystick.h"
+#include "oled.h"
 
 
 
@@ -32,12 +33,23 @@ int main(void)
 	PORTE |= (1 << PE1);	
 	xmem_init();
 	//SRAM_test();
-	PWM_init();  
+	PWM_init();
+	oled_init();
+	JOYSTICK js = joystick_init();
 	
     while (1) 
     {
-		printf("%d",adc_read(0));
-		//printf("hello\n\r");
+		SLIDER sd = slider_get_position();
+		
+		joystick_get_position_prc(&js);
+		joystick_get_direction(&js);
+		
+		
+		//joystick_print(&js);
+		
+		oled_print('a');
+		
+		_delay_ms(20);
 		
 		
     }
