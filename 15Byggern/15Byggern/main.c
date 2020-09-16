@@ -32,7 +32,7 @@ int main(void)
 	PORTE |= (1 << PE1);	
 	xmem_init();
 	//SRAM_test();
-	PWM_init();
+	PWM_init();  
 	
     while (1) 
     {
