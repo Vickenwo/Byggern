@@ -79,6 +79,7 @@ void joystick_print(JOYSTICK *js){
 	x = js->x_pos_prc;
 	y = js->y_pos_prc;
 	
+	
 	char direction;
 	switch (js->dr)
 	{
@@ -100,6 +101,7 @@ void joystick_print(JOYSTICK *js){
 	}
 	
 	printf("X: %d\tY: %d\t Direction: %d\n\r", x, y, direction);
+	//joystick_print_direction(js);
 	
 	//joystick_print_position();
 	//joystick_get_direction();

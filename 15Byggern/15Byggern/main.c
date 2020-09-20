@@ -35,6 +35,7 @@ int main(void)
 	//SRAM_test();
 	PWM_init();
 	oled_init();
+	
 	JOYSTICK js = joystick_init();
 	
     while (1) 
@@ -46,8 +47,7 @@ int main(void)
 		
 		
 		//joystick_print(&js);
-		
-		oled_print('a');
+		oled_pos(2, 4);
 		
 		_delay_ms(20);
 		

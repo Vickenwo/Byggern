@@ -13,11 +13,11 @@ static volatile char* oled_data_address = (char*)OLED_DATA_ADDRESS;
 POSITION position;
 
 void write_command(uint8_t command){
-	*oled_command_address = command;
+	oled_command_address[0] = command;
 }
 
 void write_data(uint8_t data){
-	*oled_data_address = data;
+	oled_data_address[0] = data;
 }
 
 void oled_init(){
@@ -50,7 +50,9 @@ void oled_init(){
 	write_command(0xd9);
 	write_command(0x21);
 	
-	
+	//Set Memory Addressing Mode
+	write_command(0x20);
+	write_command(0x02);
 	
 	//Set Vcomh Deselect level
 	write_command(0xdb);
@@ -68,12 +70,6 @@ void oled_init(){
 		
 	//Display on
 	write_command(0xaf);
-	
-	//Page addressing
-	write_command(0xb0);	//Page start address
-	write_command(0x00);	//Lower nibble of column to 0
-	write_command(0x10);	//Higher nibble of column
-	
 
 }
 
@@ -85,34 +81,56 @@ void oled_reset(){
 }
 
 void oled_home(){
-	position.row=0;
-	position.column=0;
+	//Set Column Address
+	write_command(0x21);
+	write_command(0x00);
+	write_command(0x7f);
+	//Set Page Address
+	write_command(0x22);
+	write_command(0x00);
+	write_command(0x07);
 }
 
-void oled_goto_line(uint8_t line){
+void oled_goto_line(uint8_t row){
+	position.row = row;
 	
+	//Set Page Address to selected row
+	write_command(0x22);
+	write_command(row);
+	write_command(row+1);
 }
 
 void oled_goto_column(uint8_t column){
+	position.column = column;
 	
+	//Set Column Address to selected column
+	write_command(0x21);
+	write_command(column);
+	write_command(0x7f);
 }
 
 void oled_clear_line(uint8_t line){
+	position.row = line;
 	for(int column=0; column<128; column++){
-		
+		position.column=0;
 	}
 	
 	oled_home();
 }
 
 void oled_pos(uint8_t row, uint8_t column){
-	position.row=row;
-	position.column;
+	oled_goto_line(row);
+	oled_goto_column(column);
 }
 
-void oled_print(char* c){
+void oled_print(char c){
 	int out = c-32;
 	for (int i=0; i<8; i++){
-		write_data(&font8[out][i]);
+		write_data(pgm_read_byte(&font8[out][i]));
 	}
+}
+
+void oled_brightness(int lvl){
+	write_command(0x81);
+	write_command(lvl);
 }
