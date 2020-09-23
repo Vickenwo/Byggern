@@ -8,6 +8,8 @@ joystick.c
 
 main.c
 
+menu.c
+
 oled.c
 
 uart.c

@@ -4,13 +4,15 @@
 #define OLED_DATA_ADDRESS 0x1200
 
 #include <avr/pgmspace.h>
+#include <util/delay.h>
+#include <stdio.h>
 #include "fonts.h"
 #include "oled.h"
 
 static volatile char* oled_command_address = (char*)OLED_COMMAND_ADDRESS;
 static volatile char* oled_data_address = (char*)OLED_DATA_ADDRESS;
 
-POSITION position;
+
 
 void write_command(uint8_t command){
 	oled_command_address[0] = command;
@@ -19,6 +21,28 @@ void write_command(uint8_t command){
 void write_data(uint8_t data){
 	oled_data_address[0] = data;
 }
+
+void oled_white(uint8_t data){
+	write_data(data);
+}
+
+void oled_black(uint8_t data){
+	write_data(~data);
+}
+
+void (*color_sel_ptr_arr[])(uint8_t data) = {oled_white, oled_black};
+
+void oled_fill(){
+	for(int i = 0; i < 8; i++){
+		for(int j = 0; j < 127; j++){
+			oled_goto_line(i);
+			oled_goto_column(j);
+			(*color_sel_ptr_arr[inverted])(0xFF);
+		}
+	}
+	oled_home();
+}
+
 
 void oled_init(){
 	//Display off
@@ -70,10 +94,12 @@ void oled_init(){
 		
 	//Display on
 	write_command(0xaf);
-
+	
+	inverted = 0;
+	oled_home();
 }
 
-void oled_reset(){
+void oled_clear(){
 	for(int line=0; line<8; line++){
 		oled_clear_line(line);
 	}
@@ -111,8 +137,21 @@ void oled_goto_column(uint8_t column){
 
 void oled_clear_line(uint8_t line){
 	position.row = line;
+	oled_goto_line(line);
 	for(int column=0; column<128; column++){
 		position.column=0;
+		(*color_sel_ptr_arr[inverted])(0x00);
+	}
+	
+	oled_home();
+}
+
+void oled_clear_column(uint8_t col){
+	position.column = col;
+	oled_goto_column(col);
+	for(int line=0; line<8; line++){
+		position.row=0;
+		(*color_sel_ptr_arr[inverted])(0x00);
 	}
 	
 	oled_home();
@@ -123,14 +162,46 @@ void oled_pos(uint8_t row, uint8_t column){
 	oled_goto_column(column);
 }
 
-void oled_print(char c){
+
+void oled_print_char(char c){
 	int out = c-32;
 	for (int i=0; i<8; i++){
-		write_data(pgm_read_byte(&font8[out][i]));
+		(*color_sel_ptr_arr[inverted])(pgm_read_byte(&font8[out][i]));
 	}
 }
+
+void oled_print_anim(){
+	for (int i = 0; i < 8; i++){
+		for (int j = 0; j < 8; j++){
+			oled_pos(4,8);
+			(*color_sel_ptr_arr[inverted])(pgm_read_byte(&sprite[i][j]));
+		}
+	}
+}
+
+
 
 void oled_brightness(int lvl){
 	write_command(0x81);
 	write_command(lvl);
 }
+
+void oled_print(char *string){
+	/*
+	for(int i = 0; string[i] != NULL; i++){
+		oled_print_char(string[idx]);
+		idx++;
+		_delay_ms(1000);
+	}
+	*/
+	
+	while(*string != '\0'){
+		
+		oled_print_char(*string++);
+		
+		//_delay_ms(1000);
+	}
+	return;
+}
+
+

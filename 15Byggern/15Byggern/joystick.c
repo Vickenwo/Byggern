@@ -7,11 +7,13 @@
 #include "joystick.h"
 #include "adc.h"
 
+volatile uint8_t BUTTON_PRESSED = 0;
+
 JOYSTICK joystick_init(){
 	JOYSTICK *js;
 	js->x_offset = adc_read(0)-127;
 	js->y_offset = adc_read(1)-127 ;
-	printf("(%d, %d)", js->x_offset, js->y_offset);
+	DDRE |= (0<<PE0);
 	return *js;
 }
 
@@ -34,12 +36,12 @@ int joystick_calculate_ratio(uint8_t input, uint8_t offset){
 	return result;
 }
 
-void joystick_get_position_prc(JOYSTICK *js){
+void joystick_update_position_prc(JOYSTICK *js){
 	js->x_pos_prc = joystick_calculate_ratio(adc_read(0), js->x_offset);
 	js->y_pos_prc = joystick_calculate_ratio(adc_read(1), js->y_offset);
 }
 
-void joystick_get_direction(JOYSTICK *js){
+void joystick_update_direction(JOYSTICK *js){
 	int threshold = 50;
 	if((js->x_pos_prc > 0 + threshold)&&(abs(js->x_pos_prc)>=(abs(js->y_pos_prc)))){ js->dr = RIGHT; }
 	else if((js->x_pos_prc < 0 - threshold)&&(abs(js->x_pos_prc)>=(abs(js->y_pos_prc)))){ js->dr = LEFT; }
