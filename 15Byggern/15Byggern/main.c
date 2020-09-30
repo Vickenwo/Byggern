@@ -15,13 +15,16 @@
 #include <util/delay.h>
 #include <stdio.h>
 #include <avr/sleep.h>
+#include <avr/interrupt.h>
 #endif
 #include "uart.h"
-#include <avr/interrupt.h>
+#include "spi.h"
 #include "adc.h"
 #include "joystick.h"
 #include "oled.h"
 #include "menu.h"
+#include "mcp2515.h"
+#include "can.h"
 
 typedef enum{
 	MENU, TEST
@@ -37,6 +40,7 @@ void init(){
 	xmem_init();
 	PWM_init();
 	oled_init();
+	can_init();
 	
 	DDRE |= (1 << PE1);
 	PORTE |= (1 << PE1);
@@ -52,8 +56,10 @@ void init(){
 	
 	oled_brightness(5);
 	inverted = 0;
-	state = MENU;
+	state = TEST;
 	menu_draw();
+	
+	
 }
 
 int main(void){
@@ -70,6 +76,8 @@ int main(void){
 				break;
 			case TEST:
 				
+				//mcp2515_write(0xAA, MCP_);
+				printf("%d", mcp2515_read(MCP_CANCTRL));
 				
 				break;
 		}
